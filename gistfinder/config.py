@@ -7,6 +7,8 @@ CONFIG_DIR = os.path.realpath(os.path.expanduser('~/.gistfinder'))
 class Config:
     config_dir = CONFIG_DIR
     db_file = os.path.join(config_dir, 'database.sqlite')
+    auth_file = os.path.join(config_dir, 'auth.json')
+
     db_url = f'sqlite:///{db_file}'
 
     LIST_TABLE = 'list'

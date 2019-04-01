@@ -68,14 +68,17 @@ class Blob:
         return out
 
 
-class GithubBase:
+class GithubBase(Config):
     BASE_URL = 'https://api.github.com/gists'
     USER_URL = 'https://api.github.com/users/robdmc/gists'
     REX_NEXT = re.compile(r'.*<(https.*?)>; rel="next"')
     PER_PAGE = 99
 
     def __init__(self):
-        self.access_token = os.environ.get('GIST_TOKEN')
+        with open(self.auth_file) as f:
+            self.access_token = json.loads(f.read()).get('GIST_TOKEN')
+
+        #self.access_token = os.environ.get('GIST_TOKEN')
         if not self.access_token:
             raise ValueError('You need a github access token')
 
