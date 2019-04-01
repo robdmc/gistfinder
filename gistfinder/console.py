@@ -8,6 +8,10 @@ from prompt_toolkit.layout.controls import BufferControl
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.filters import to_filter
 from prompt_toolkit.styles import Style
+from pygments.lexers import Python3Lexer
+
+from prompt_toolkit.layout import Margin, NumberedMargin, ScrollbarMargin
+from prompt_toolkit.lexers import PygmentsLexer
 
 from .loader import Loader
 
@@ -23,7 +27,7 @@ def list_row_change(buffer):
 
     content_buffer = app_state.content_buffer
     content_buffer.read_only = to_filter(False)
-    content_buffer.text = app_state.list_lines[pos]
+    content_buffer.text = app_state.code(pos)
     content_buffer.read_only = to_filter(True)
 
 
@@ -32,7 +36,8 @@ class AppState:
         self.loader = loader
 
         self.search_buffer = Buffer(on_cursor_position_changed=list_row_change)  # Editable buffer.
-        self.search_buffer.text = LIPSUM
+        self.search_buffer.text = '\n'.join(self.list_lines)
+
         self.search_buffer.read_only = to_filter(True)
         self.search_buffer.app_state = self
 
@@ -43,16 +48,34 @@ class AppState:
 
     @property
     def list_lines(self):
-        return [r['file_name'] for r in self.loader]
+        return [r['file_name'] for r in self.loader.records.values()]
+
+    def code(self, ind):
+        return list(self.loader.records.values())[ind]['code']
+
+
+class MyMargin(Margin):
+    def get_width(self):
+        return 1
 
 
 state = AppState(Loader())
 
 
 root_container = VSplit([
-    Window(content=BufferControl(buffer=state.search_buffer, focusable=True), cursorline=True),
-    Window(width=1, char='|'),
-    Window(content=BufferControl(buffer=state.content_buffer, focusable=True)),
+    Window(
+        width=55,
+        left_margins=[NumberedMargin()],
+        right_margins=[ScrollbarMargin()],
+        content=BufferControl(buffer=state.search_buffer, focusable=True),
+        cursorline=True
+    ),
+    # Window(width=1, char='|'),
+    Window(
+        left_margins=[NumberedMargin()],
+        content=BufferControl(buffer=state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
+        ignore_content_width=True
+    ),
 ])
 
 
@@ -65,7 +88,7 @@ def _(event):
     event.app.exit()
 
 
-if __name__ == '__main__':
+def cli():
 
     layout = Layout(root_container)
 
@@ -88,39 +111,3 @@ if __name__ == '__main__':
     state.app = app
 
     app.run()
-
-
-
-#def my_change(buffer):
-#    buffer.read_only=to_filter(False)
-#    doc = buffer.document
-#    lines = [f'{str(doc.cursor_position_row)} > {l}'[:15] for l in lips_lines]
-#
-#    buffer.text = '\n'.join(lines)
-#    buffer.read_only=to_filter(True)
-#    with open('/tmp/buff.txt', 'w') as f:
-#        f.write(str(dir(buffer)))
-
-
-#kb1 = KeyBindings()
-#@kb1.add('c-h')
-#def _(event):
-#    buffer = event.app.layout.current_window.content.buffer
-#    buffer.read_only=to_filter(False)
-#    doc = buffer.document
-#    if event.app.funky  == 'orig':
-#        event.app.funky = 'custom'
-#        lines = buffer.text.split('\n')
-#        lines = [f'-{str(doc.cursor_position_row)}  {l}' for l in lines]
-#        buffer.text = '\n'.join(lines)
-#    else:
-#        event.app.funky = 'orig'
-#        buffer.text = LIPSUM
-#    buffer.read_only=to_filter(True)
-
-
-# root_container = VSplit([
-#     Window(content=BufferControl(buffer=search_buffer, key_bindings=kb1, focusable=True), cursorline=True),
-#     Window(width=1, char='|'),
-#     Window(content=BufferControl(buffer=content_buffer, key_bindings=kb1, focusable=True)),
-# ])

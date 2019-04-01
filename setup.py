@@ -62,4 +62,9 @@ setup(
     tests_require=tests_require,
     extras_require=extras_require,
     zip_safe=False,
+    entry_points={
+        'console_scripts': [
+            'gistfinder = gistfinder.console:cli',
+        ],
+    }
 )
