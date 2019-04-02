@@ -4,7 +4,7 @@ from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.layout.containers import VSplit, Window
+from prompt_toolkit.layout.containers import VSplit, Window, HSplit
 from prompt_toolkit.layout.controls import BufferControl
 
 
@@ -38,16 +38,24 @@ class AppState:
     def __init__(self, loader):
         self.loader = loader
 
-        self.search_buffer = Buffer(on_cursor_position_changed=list_row_change)  # Editable buffer.
-        self.search_buffer.text = '\n'.join(self.list_lines)
+        self.list_buffer = Buffer(on_cursor_position_changed=list_row_change)  # Editable buffer.
+        self.list_buffer.text = '\n'.join(self.list_lines)
 
-        self.search_buffer.read_only = to_filter(True)
-        self.search_buffer.app_state = self
+        self.list_buffer.read_only = to_filter(True)
+        self.list_buffer.app_state = self
 
         self.content_buffer = Buffer()  # Editable buffer.
         self.content_buffer.text = self.code(0)
         self.content_buffer.read_only = to_filter(True)
         self.content_buffer.app_state = self
+
+        help_text = ' Search:/  Window:<space> Select:<enter> Exit:<ctrl-c>  Help:<ctrl-h>'
+        self.search_buffer = Buffer()  # Editable buffer.
+        self.search_buffer.text = help_text
+        self.search_buffer.read_only = to_filter(True)
+        self.search_buffer.app_state = self
+
+
         self._index = 0
         self.print_on_exit = False
 
@@ -92,6 +100,7 @@ class AppState:
 
     def focus_window(self, index):
         self.current_window_index = index
+        return self.current_window
 
     def next_window(self):
         self.current_window_index = (self.current_window_index + 1) % len(self.windows)
@@ -109,7 +118,7 @@ state = AppState(Loader())
 list_window = Window(
     width=55,
     left_margins=[NumberedMargin()],
-    content=BufferControl(buffer=state.search_buffer, focusable=True),
+    content=BufferControl(buffer=state.list_buffer, focusable=True),
     cursorline=True,
     # style='bg:#B0A0CB fg:black',
     style='bg:#AE9EC9 fg:black',
@@ -122,10 +131,22 @@ code_window = Window(
         ignore_content_width=True
 )
 
+search_window = Window(
+    content=BufferControl(buffer=state.search_buffer, focusable=True),
+    height=1,
+    style='bg:#1B2631  fg:#F1C40F',
+)
+
 state.register_windows(list_window, code_window)
+state.search_window = search_window
+
+main_container = VSplit([list_window, code_window])
 
 
-root_container = VSplit([list_window, code_window])
+root_container = HSplit([
+    main_container,
+    search_window
+])
 
 
 kb = KeyBindings()
@@ -148,6 +169,17 @@ def _(event):
     window_to_focus = event.app.state.next_window()
     event.app.layout.focus(window_to_focus)
 
+@kb.add('/')
+def _(event):
+    " Quit application. "
+    window_to_focus = event.app.state.search_window
+    event.app.layout.focus(window_to_focus)
+
+@kb.add('escape')
+def _(event):
+    " Quit application. "
+    window_to_focus = event.app.state.focus_window(0)
+    event.app.layout.focus(window_to_focus)
 
 def cli():
 
