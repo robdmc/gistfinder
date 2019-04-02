@@ -49,6 +49,7 @@ class AppState:
         self.content_buffer.read_only = to_filter(True)
         self.content_buffer.app_state = self
         self._index = 0
+        self.print_on_exit = False
 
     @property
     def list_lines(self):
@@ -75,36 +76,56 @@ class AppState:
         return self.descriptions[self._index]
 
     def print(self):
+        if not self.print_on_exit:
+            return
         print('\n', file=sys.stderr)
         print(('>' * 20) + ' ' + self.selected_file_name + ' ' + ('<' * 20), file=sys.stderr)
         print(file=sys.stderr)
         print(self.selected_code, file=sys.stderr)
         print('', file=sys.stderr)
         print(('>' * 30) + ('<' * 30), file=sys.stderr)
-        print('\n', file=sys.stderr)
+        print('', file=sys.stderr)
+
+    def register_windows(self, *windows):
+        self.windows = windows
+        self.current_window_index = 0
+
+    def focus_window(self, index):
+        self.current_window_index = index
+
+    def next_window(self):
+        self.current_window_index = (self.current_window_index + 1) % len(self.windows)
+        return self.current_window
+
+    @property
+    def current_window(self):
+        return self.windows[self.current_window_index]
 
 
 
 state = AppState(Loader())
 
 
-root_container = VSplit([
-    Window(
-        width=55,
-        left_margins=[NumberedMargin()],
-        content=BufferControl(buffer=state.search_buffer, focusable=True),
-        cursorline=True,
-        # style='bg:#B0A0CB fg:black',
-        style='bg:#AE9EC9 fg:black',
-        # style='bg:#154360 fg:white',
-    ),
-    # Window(width=1, char='|'),
-    Window(
+list_window = Window(
+    width=55,
+    left_margins=[NumberedMargin()],
+    content=BufferControl(buffer=state.search_buffer, focusable=True),
+    cursorline=True,
+    # style='bg:#B0A0CB fg:black',
+    style='bg:#AE9EC9 fg:black',
+    # style='bg:#154360 fg:white',
+)
+
+code_window = Window(
         left_margins=[NumberedMargin()],
         content=BufferControl(buffer=state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
         ignore_content_width=True
-    ),
-])
+)
+
+state.register_windows(list_window, code_window)
+
+
+root_container = VSplit([list_window, code_window])
 
 
 kb = KeyBindings()
@@ -118,7 +139,15 @@ def _(event):
 @kb.add('enter')
 def _(event):
     " Quit application. "
+    event.app.state.print_on_exit = True
     event.app.exit()
+
+@kb.add('space')
+def _(event):
+    " Quit application. "
+    window_to_focus = event.app.state.next_window()
+    event.app.layout.focus(window_to_focus)
+
 
 def cli():
 
@@ -144,5 +173,5 @@ def cli():
     app.state = state
 
     app.run()
-
     state.print()
+
