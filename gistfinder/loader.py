@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from fnmatch import fnmatch
 from fuzzywuzzy import process
-import easier as ezr
 from .config import Config
 from .utils import cached_property
 

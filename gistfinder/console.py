@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+import sys
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import VSplit, Window
 from prompt_toolkit.layout.controls import BufferControl
+
+
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.filters import to_filter
 from prompt_toolkit.styles import Style
@@ -16,8 +19,8 @@ from prompt_toolkit.lexers import PygmentsLexer
 from .loader import Loader
 
 
-LIPSUM = '\n'.join(''.join([f'{x} '] * 10) for x in range(1000))
-lips_lines = LIPSUM.split('\n')
+
+
 
 
 def list_row_change(buffer):
@@ -42,21 +45,44 @@ class AppState:
         self.search_buffer.app_state = self
 
         self.content_buffer = Buffer()  # Editable buffer.
-        self.content_buffer.text = self.list_lines[0]
+        self.content_buffer.text = self.code(0)
         self.content_buffer.read_only = to_filter(True)
         self.content_buffer.app_state = self
+        self._index = 0
 
     @property
     def list_lines(self):
         return [r['file_name'] for r in self.loader.records.values()]
 
-    def code(self, ind):
-        return list(self.loader.records.values())[ind]['code']
+    @property
+    def descriptions(self):
+        return [r['description'] for r in self.loader.records.values()]
 
+    def code(self, index):
+        self._index = index
+        return list(self.loader.records.values())[self._index]['code']
 
-class MyMargin(Margin):
-    def get_width(self):
-        return 1
+    @property
+    def selected_code(self):
+        return self.code(self._index)
+
+    @property
+    def selected_file_name(self):
+        return self.list_lines[self._index]
+
+    @property
+    def selected_description(self):
+        return self.descriptions[self._index]
+
+    def print(self):
+        print('\n', file=sys.stderr)
+        print(('>' * 20) + ' ' + self.selected_file_name + ' ' + ('<' * 20), file=sys.stderr)
+        print(file=sys.stderr)
+        print(self.selected_code, file=sys.stderr)
+        print('', file=sys.stderr)
+        print(('>' * 30) + ('<' * 30), file=sys.stderr)
+        print('\n', file=sys.stderr)
+
 
 
 state = AppState(Loader())
@@ -66,9 +92,11 @@ root_container = VSplit([
     Window(
         width=55,
         left_margins=[NumberedMargin()],
-        right_margins=[ScrollbarMargin()],
         content=BufferControl(buffer=state.search_buffer, focusable=True),
-        cursorline=True
+        cursorline=True,
+        # style='bg:#B0A0CB fg:black',
+        style='bg:#AE9EC9 fg:black',
+        # style='bg:#154360 fg:white',
     ),
     # Window(width=1, char='|'),
     Window(
@@ -87,6 +115,10 @@ def _(event):
     " Quit application. "
     event.app.exit()
 
+@kb.add('enter')
+def _(event):
+    " Quit application. "
+    event.app.exit()
 
 def cli():
 
@@ -109,5 +141,8 @@ def cli():
         style=style,
     )
     state.app = app
+    app.state = state
 
     app.run()
+
+    state.print()
