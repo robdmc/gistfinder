@@ -28,7 +28,11 @@ class Field:
         required_atts = ['_blob']
         for att_name in required_atts:
             if not hasattr(instance, att_name):
-                raise ValueError(f'Fields can only be set on objects having a {att_name} attribute')
+                raise ValueError(
+                    'Fields can only be set on objects having a {att_name} attribute'.format(
+                        att_name=att_name
+                    )
+                )
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -89,7 +93,7 @@ class ListBlob(Blob):
     updated_at = Field('updated_at', 'updated_at', transformer=parse)
 
     def __str__(self):
-        return f'{self.__class__.__name__}({self.gid!r})'
+        return '{self.__class__.__name__}({gid})'.format(gid=self.gid)
 
     def __repr__(self):
         return self.__str__()
@@ -154,7 +158,7 @@ class GistBlob(Blob):
     updated_at = Field('updated_at', 'updated_at', transformer=parse)
 
     def __str__(self):
-        return f'{self.__class__.__name__}({self.gid!r})'
+        return '{self.__class__.__name__}({gid}})'.format(gid=self.gid)
 
     def __repr__(self):
         return self.__str__()
@@ -171,7 +175,7 @@ class FileBlob(Blob):
         self.gid = gist_id
 
     def __str__(self):
-        return f'{self.__class__.__name__}({self.file_name!r})'
+        return '{self.__class__.__name__}({file_name})'.format(file_name=self.file_name)
 
     def __repr__(self):
         return self.__str__()
@@ -200,7 +204,7 @@ class SingleGistGetter(GithubBase):
 class Updater(Config):
     config_dir = CONFIG_DIR
     db_file = os.path.join(config_dir, 'database.sqlite')
-    db_url = f'sqlite:///{db_file}'
+    db_url = 'sqlite:///{db_file}'.format(db_file=db_file)
 
     LIST_TABLE = 'list'
     LAST_UPDATE_TABLE = 'last_update'

@@ -10,7 +10,7 @@ class Config:
     db_file = os.path.join(config_dir, 'database.sqlite')
     auth_file = os.path.join(config_dir, 'github_auth.json')
 
-    db_url = f'sqlite:///{db_file}'
+    db_url = 'sqlite:///{db_file}'.format(db_file=db_file)
 
     LIST_TABLE = 'list'
     LAST_UPDATE_TABLE = 'last_update'
