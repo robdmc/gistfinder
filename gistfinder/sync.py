@@ -1,16 +1,21 @@
 import os
 import json
+import sys
+
 import requests
 import inspect
 import datetime
 import re
 from dateutil.parser import parse
+import pytz
+
 
 from .config import Config
 from .utils import cached_property
 
 
 CONFIG_DIR = os.path.realpath(os.path.expanduser('~/.gistfinder'))
+UTC = pytz.timezone('utc')
 
 
 class Field:
@@ -75,12 +80,7 @@ class GithubBase(Config):
     PER_PAGE = 99
 
     def __init__(self):
-        with open(self.auth_file) as f:
-            self.access_token = json.loads(f.read()).get('GIST_TOKEN')
-
-        #self.access_token = os.environ.get('GIST_TOKEN')
-        if not self.access_token:
-            raise ValueError('You need a github access token')
+        self.access_token = Config().github_token
 
 
 class ListBlob(Blob):
@@ -130,7 +130,6 @@ class AllGistGetter(GithubBase):
             'page': 1
         }
         resp = requests.get(self.USER_URL, params=params)
-
         # Process the first response
         next_link, blobs = self.process_response(resp, blobs)
 
@@ -187,7 +186,10 @@ class SingleGistGetter(GithubBase):
         params = {
             'access_token': self.access_token,
         }
-        for gid in gids:
+        total = len(gids)
+        for ind, gid in enumerate(gids):
+            if ind % 5 == 0:
+                print('Pulling {} of {}'.format(ind + 1, total), file=sys.stderr)
             url = os.path.join(self.BASE_URL, gid)
             resp = requests.get(url, params=params)
             data = json.loads(resp.text)
@@ -213,22 +215,43 @@ class Updater(Config):
         table.drop()
         agc = AllGistGetter()
         recs = agc.records
+
         for rec in recs:
             table.upsert(rec, ['gid'])
 
     def sync_last_update(self, db):
         table = db[self.LAST_UPDATE_TABLE]
         table.drop()
-        table.insert({'time': datetime.datetime.utcnow()})
+        now = datetime.datetime.utcnow()
+        now = UTC.localize(now)
+        table.insert({'time': now})
+
+    @cached_property
+    def last_updated_time(self):
+        table = self.db[self.LAST_UPDATE_TABLE]
+        time_recs = list(table)
+        if not time_recs:
+            min_time = UTC.localize(datetime.datetime(1970, 1, 1))
+            return min_time
+        rec = time_recs[0]
+        time = rec['time']
+        if time.tzinfo is None:
+            time = UTC.localize(time)
+        return time
 
     @cached_property
     def unsynced_gist_blobs(self):
+        # Pull list of all gist meta info
+        agc = AllGistGetter()
+        recs = agc.gist_list
+
+        # Filter down to those with new update times
+        recs = [r for r in recs if r.updated_at > self.last_updated_time]
 
         # Get gist ids that need upserting
-        recs = list(self.list_table)
-        gids = [r['gid'] for r in recs]
+        gids = [r.gid for r in recs]
 
-        #
+        # Sync the gists
         sgg = SingleGistGetter()
         return sgg.get_gists(gids)
 
@@ -258,9 +281,22 @@ class Updater(Config):
 
     def sync_gists(self, db):
         recs = self.unsynced_gist_file_records
+        if not recs:
+            print('Up to date', file=sys.stderr)
+            print()
+            return
+
         table = db[self.GIST_TABLE]
         for rec in recs:
             table.upsert(rec, ['gid'], types={'code': db.types.text})
+
+    def reset(self):
+        config = Config()
+        db_file = config.db_file
+        if os.path.isfile(db_file):
+            print('Removing {}'.format(db_file), file=sys.stderr)
+            os.unlink(db_file)
+        self.sync()
 
     def sync(self):
         with self.db as db:

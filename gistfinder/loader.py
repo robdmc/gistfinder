@@ -7,7 +7,16 @@ from .utils import cached_property
 
 class Loader(Config):
     @cached_property
+    def has_tables(self):
+        expected_tables = {'list', 'gist'}
+        existing_tables = set(self.db.tables)
+        return existing_tables.intersection(expected_tables) == expected_tables
+
+    @cached_property
     def records(self):
+        if not self.has_tables:
+            return OrderedDict()
+
         cursor = self.db.query(
             """
                 select

@@ -15,30 +15,18 @@ from pygments.lexers import Python3Lexer
 
 from prompt_toolkit.layout import Margin, NumberedMargin, ScrollbarMargin
 from prompt_toolkit.lexers import PygmentsLexer
+import click
 
+from gistfinder.sync import Updater
 from .loader import Loader
-
-
-
-
-
-
-def list_row_change(buffer):
-    app_state = buffer.app_state
-    doc = buffer.document
-    pos = doc.cursor_position_row
-
-    content_buffer = app_state.content_buffer
-    content_buffer.read_only = to_filter(False)
-    content_buffer.text = app_state.code(pos)
-    content_buffer.read_only = to_filter(True)
+from .config import Config
 
 
 class AppState:
     def __init__(self, loader):
         self.loader = loader
 
-        self.list_buffer = Buffer(on_cursor_position_changed=list_row_change)  # Editable buffer.
+        self.list_buffer = Buffer(on_cursor_position_changed=self.list_row_change)  # Editable buffer.
         self.list_buffer.text = '\n'.join(self.list_lines)
 
         self.list_buffer.read_only = to_filter(True)
@@ -66,6 +54,16 @@ class AppState:
     @property
     def descriptions(self):
         return [r['description'] for r in self.loader.records.values()]
+
+    def list_row_change(self, buffer):
+        app_state = buffer.app_state
+        doc = buffer.document
+        pos = doc.cursor_position_row
+
+        content_buffer = app_state.content_buffer
+        content_buffer.read_only = to_filter(False)
+        content_buffer.text = app_state.code(pos)
+        content_buffer.read_only = to_filter(True)
 
     def code(self, index):
         self._index = index
@@ -111,80 +109,92 @@ class AppState:
         return self.windows[self.current_window_index]
 
 
+def get_container(state):
 
-state = AppState(Loader())
-
-
-list_window = Window(
-    width=55,
-    left_margins=[NumberedMargin()],
-    content=BufferControl(buffer=state.list_buffer, focusable=True),
-    cursorline=True,
-    # style='bg:#B0A0CB fg:black',
-    style='bg:#AE9EC9 fg:black',
-    # style='bg:#154360 fg:white',
-)
-
-code_window = Window(
+    list_window = Window(
+        width=55,
         left_margins=[NumberedMargin()],
-        content=BufferControl(buffer=state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
-        ignore_content_width=True
-)
+        content=BufferControl(buffer=state.list_buffer, focusable=True),
+        cursorline=True,
+        # style='bg:#B0A0CB fg:black',
+        style='bg:#AE9EC9 fg:black',
+        # style='bg:#154360 fg:white',
+    )
 
-search_window = Window(
-    content=BufferControl(buffer=state.search_buffer, focusable=True),
-    height=1,
-    style='bg:#1B2631  fg:#F1C40F',
-)
+    code_window = Window(
+            left_margins=[NumberedMargin()],
+            content=BufferControl(buffer=state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
+            ignore_content_width=True
+    )
 
-state.register_windows(list_window, code_window)
-state.search_window = search_window
+    search_window = Window(
+        content=BufferControl(buffer=state.search_buffer, focusable=True),
+        height=1,
+        style='bg:#1B2631  fg:#F1C40F',
+    )
 
-main_container = VSplit([list_window, code_window])
+    state.register_windows(list_window, code_window)
+    state.search_window = search_window
 
-
-root_container = HSplit([
-    main_container,
-    search_window
-])
-
-
-kb = KeyBindings()
+    main_container = VSplit([list_window, code_window])
 
 
-@kb.add('c-c')
-def _(event):
-    " Quit application. "
-    event.app.exit()
+    root_container = HSplit([
+        main_container,
+        search_window
+    ])
+    return root_container
 
-@kb.add('enter')
-def _(event):
-    " Quit application. "
-    event.app.state.print_on_exit = True
-    event.app.exit()
 
-@kb.add('space')
-def _(event):
-    " Quit application. "
-    window_to_focus = event.app.state.next_window()
-    event.app.layout.focus(window_to_focus)
 
-@kb.add('/')
-def _(event):
-    " Quit application. "
-    window_to_focus = event.app.state.search_window
-    event.app.layout.focus(window_to_focus)
+def get_key_bindings():
+    kb = KeyBindings()
 
-@kb.add('escape')
-def _(event):
-    " Quit application. "
-    window_to_focus = event.app.state.focus_window(0)
-    event.app.layout.focus(window_to_focus)
 
-def cli():
+    @kb.add('c-c')
+    def _(event):
+        " Quit application. "
+        event.app.exit()
+
+    @kb.add('enter')
+    def _(event):
+        " Quit application. "
+        event.app.state.print_on_exit = True
+        event.app.exit()
+
+    @kb.add('space')
+    def _(event):
+        " Quit application. "
+        window_to_focus = event.app.state.next_window()
+        event.app.layout.focus(window_to_focus)
+
+    @kb.add('/')
+    def _(event):
+        " Quit application. "
+        window_to_focus = event.app.state.search_window
+        event.app.layout.focus(window_to_focus)
+
+    @kb.add('escape')
+    def _(event):
+        " Quit application. "
+        window_to_focus = event.app.state.focus_window(0)
+        event.app.layout.focus(window_to_focus)
+
+    return kb
+
+def run_ui():
+    loader = Loader()
+    if not loader.has_tables:
+        msg = 'You must run sync command'
+        print(msg, file=sys.stderr)
+        sys.exit(1)
+
+    state = AppState(loader)
+
+    root_container = get_container(state)
+    kb = get_key_bindings()
 
     layout = Layout(root_container)
-
     style = Style(
         [
             # ('cursor-line', 'fg:ansiblack bg:ansicyan'),
@@ -207,3 +217,21 @@ def cli():
     app.run()
     state.print()
 
+
+@click.command(help='A CLI tool for searching your gists')
+@click.option('-t', '--token', help='Set up github token')
+@click.option('-s', '--sync', is_flag=True, help='Sync updated gists')
+@click.option('-r', '--reset', is_flag=True, help='Delete and resync all gists')
+@click.option('--fake', is_flag=True, help='Delete and resync all gists')
+def cli(token, sync, reset, fake):
+    if fake:
+        Updater().rob()
+        return
+    if reset:
+        Updater().reset()
+    elif sync:
+        Updater().sync()
+    elif token:
+        Config().set_github_token(token)
+    else:
+        run_ui()
