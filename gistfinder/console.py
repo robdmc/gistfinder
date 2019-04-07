@@ -109,114 +109,126 @@ class AppState:
         return self.windows[self.current_window_index]
 
 
-def get_container(state):
+class UI:
+    def __init__(self):
+        loader = Loader()
+        if not loader.has_tables:
+            msg = 'You must run sync command'
+            print(msg, file=sys.stderr)
+            sys.exit(1)
 
-    list_window = Window(
-        width=55,
-        left_margins=[NumberedMargin()],
-        content=BufferControl(buffer=state.list_buffer, focusable=True),
-        cursorline=True,
-        # style='bg:#B0A0CB fg:black',
-        style='bg:#AE9EC9 fg:black',
-        # style='bg:#154360 fg:white',
-    )
+        self.state = AppState(loader)
 
-    code_window = Window(
+    def get_container(self):
+
+        list_window = Window(
+            width=55,
             left_margins=[NumberedMargin()],
-            content=BufferControl(buffer=state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
-            ignore_content_width=True
-    )
+            content=BufferControl(buffer=self.state.list_buffer, focusable=True),
+            cursorline=True,
+            # style='bg:#B0A0CB fg:black',
+            style='bg:#AE9EC9 fg:black',
+            # style='bg:#154360 fg:white',
+        )
 
-    search_window = Window(
-        content=BufferControl(buffer=state.search_buffer, focusable=True),
-        height=1,
-        style='bg:#1B2631  fg:#F1C40F',
-    )
+        code_window = Window(
+                left_margins=[NumberedMargin()],
+                content=BufferControl(buffer=self.state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
+                ignore_content_width=True
+        )
 
-    state.register_windows(list_window, code_window)
-    state.search_window = search_window
+        search_window = Window(
+            content=BufferControl(buffer=self.state.search_buffer, focusable=True),
+            height=1,
+            style='bg:#1B2631  fg:#F1C40F',
+        )
 
-    main_container = VSplit([list_window, code_window])
+        self.state.register_windows(list_window, code_window)
+        self.state.search_window = search_window
 
-
-    root_container = HSplit([
-        main_container,
-        search_window
-    ])
-    return root_container
-
-
-
-def get_key_bindings():
-    kb = KeyBindings()
+        main_container = VSplit([list_window, code_window])
 
 
-    @kb.add('c-c')
-    def _(event):
-        " Quit application. "
-        event.app.exit()
+        root_container = HSplit([
+            main_container,
+            search_window
+        ])
+        return root_container
 
-    @kb.add('enter')
-    def _(event):
-        " Quit application. "
-        event.app.state.print_on_exit = True
-        event.app.exit()
 
-    @kb.add('space')
-    def _(event):
-        " Quit application. "
-        window_to_focus = event.app.state.next_window()
-        event.app.layout.focus(window_to_focus)
 
-    @kb.add('/')
-    def _(event):
-        " Quit application. "
-        window_to_focus = event.app.state.search_window
-        event.app.layout.focus(window_to_focus)
+    def get_key_bindings(self):
+        kb = KeyBindings()
 
-    @kb.add('escape')
-    def _(event):
-        " Quit application. "
-        window_to_focus = event.app.state.focus_window(0)
-        event.app.layout.focus(window_to_focus)
 
-    return kb
+        @kb.add('c-c')
+        def _(event):
+            " Quit application. "
+            event.app.exit()
 
-def run_ui():
-    loader = Loader()
-    if not loader.has_tables:
-        msg = 'You must run sync command'
-        print(msg, file=sys.stderr)
-        sys.exit(1)
+        @kb.add('enter')
+        def _(event):
+            " Quit application. "
+            event.app.state.print_on_exit = True
+            event.app.exit()
 
-    state = AppState(loader)
+        @kb.add('space')
+        def _(event):
+            " Quit application. "
+            window_to_focus = event.app.state.next_window()
+            event.app.layout.focus(window_to_focus)
 
-    root_container = get_container(state)
-    kb = get_key_bindings()
+        @kb.add('/')
+        def _(event):
+            " Quit application. "
+            window_to_focus = event.app.state.search_window
+            event.app.layout.focus(window_to_focus)
 
-    layout = Layout(root_container)
-    style = Style(
-        [
-            # ('cursor-line', 'fg:ansiblack bg:ansicyan'),
-            ('cursor-line', 'fg:ansiwhite bg:#003366'),
-            ('cursor-line', 'fg:#CCCCCC bg:#003366'),
-        ]
-    )
+        @kb.add('escape')
+        def _(event):
+            " Quit application. "
+            window_to_focus = event.app.state.focus_window(0)
+            event.app.layout.focus(window_to_focus)
 
-    app = Application(
-        layout=layout,
-        full_screen=True,
-        key_bindings=kb,
-        editing_mode=EditingMode.VI,
-        mouse_support=True,
-        style=style,
-    )
-    state.app = app
-    app.state = state
+        return kb
 
-    app.run()
-    state.print()
+    def run(self):
+        # loader = Loader()
+        # if not loader.has_tables:
+        #     msg = 'You must run sync command'
+        #     print(msg, file=sys.stderr)
+        #     sys.exit(1)
+        #
+        # state = AppState(loader)
+        # ui = UI(state)
+        #
+        # root_container = ui.get_container(state)
+        # kb = ui.get_key_bindings()
+        root_container = self.get_container()
+        kb = self.get_key_bindings()
 
+        layout = Layout(root_container)
+        style = Style(
+            [
+                # ('cursor-line', 'fg:ansiblack bg:ansicyan'),
+                ('cursor-line', 'fg:ansiwhite bg:#003366'),
+                ('cursor-line', 'fg:#CCCCCC bg:#003366'),
+            ]
+        )
+
+        app = Application(
+            layout=layout,
+            full_screen=True,
+            key_bindings=kb,
+            editing_mode=EditingMode.VI,
+            mouse_support=True,
+            style=style,
+        )
+        self.state.app = app
+        app.state = self.state
+
+        app.run()
+        self.state.print()
 
 @click.command(help='A CLI tool for searching your gists')
 @click.option('-t', '--token', help='Set up github token')
@@ -234,4 +246,4 @@ def cli(token, sync, reset, fake):
     elif token:
         Config().set_github_token(token)
     else:
-        run_ui()
+        UI().run()
