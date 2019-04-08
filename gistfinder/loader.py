@@ -50,7 +50,8 @@ class Loader(Config):
         return out_recs
 
     def rank(self, records, expr, field):
-        tups = process.extract(expr, records, limit=(len(records) + 1))
+        search_recs = OrderedDict((t[0], t[1][field]) for t in records.items())
+        tups = process.extract(expr, search_recs, limit=len(records) + 1)
         out = OrderedDict()
         for tup in tups:
             gid = tup[2]

@@ -6,10 +6,12 @@ from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import VSplit, Window, HSplit
 from prompt_toolkit.layout.controls import BufferControl
+from prompt_toolkit.lexers import Lexer
+
 
 
 from prompt_toolkit.layout.layout import Layout
-from prompt_toolkit.filters import to_filter
+from prompt_toolkit.filters import to_filter, Condition
 from prompt_toolkit.styles import Style
 from pygments.lexers import Python3Lexer
 
@@ -22,12 +24,43 @@ from .loader import Loader
 from .config import Config
 
 
+from prompt_toolkit.styles.named_colors import NAMED_COLORS
+from prompt_toolkit.application.current import get_app
+from prompt_toolkit.filters import Condition
+
+@Condition
+def not_in_search_mode():
+    app = get_app()
+    return app.state.layout.current_window != app.state.search_window
+
+
+
+# class RainbowLexer(Lexer):
+#     def lex_document(self, document):
+#         colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
+#
+#         def get_line(lineno):
+#             ddd.ping()
+#             return [(colors[i % len(colors)], c) for i, c in enumerate(document.lines[lineno])]
+#
+#         return get_line
+
+
+
 class AppState:
+    SEARCH_DEFAULT_TEXT = ' Search:/  Window:<space> Select:<enter> Exit:<ctrl-c>  Help:<ctrl-h>'
     def __init__(self, loader):
+        self.glob_expr = None
+        self.text_expr = None
+        self.desc_expr = None
+        self.file_expr = None
+        self.code_expr = None
+
         self.loader = loader
 
         self.list_buffer = Buffer(on_cursor_position_changed=self.list_row_change)  # Editable buffer.
-        self.list_buffer.text = '\n'.join(self.list_lines)
+        # self.list_buffer.text = '\n'.join(self.list_lines)
+        self.sync_list_lines()
 
         self.list_buffer.read_only = to_filter(True)
         self.list_buffer.app_state = self
@@ -37,9 +70,10 @@ class AppState:
         self.content_buffer.read_only = to_filter(True)
         self.content_buffer.app_state = self
 
-        help_text = ' Search:/  Window:<space> Select:<enter> Exit:<ctrl-c>  Help:<ctrl-h>'
-        self.search_buffer = Buffer()  # Editable buffer.
-        self.search_buffer.text = help_text
+        help_text = self.SEARCH_DEFAULT_TEXT
+        self.search_buffer = Buffer(on_text_changed=self.search_text_change)  # Editable buffer.
+        self.search_buffer.app_state = self
+        # self.search_buffer.text = help_text
         self.search_buffer.read_only = to_filter(True)
         self.search_buffer.app_state = self
 
@@ -47,13 +81,119 @@ class AppState:
         self._index = 0
         self.print_on_exit = False
 
+        self._list_lines = None
+
+
+    def sync_list_lines(self):
+        # if self._list_lines is None:
+        #     self._list_lines = self.all_list_lines
+
+        self.list_buffer.read_only = to_filter(False)
+        self.list_buffer.text = '\n'.join(self.list_lines)
+        self.list_buffer.read_only = to_filter(True)
+
+    def clear_searches(self):
+        self.glob_expr = None
+        self.text_expr = None
+        self.desc_expr = None
+        self.file_expr = None
+        self.code_expr = None
+
+    @property
+    def list_recs(self):
+        return self.loader.get(
+            glob_expr=self.glob_expr,
+            text_expr=self.text_expr,
+            desc_expr=self.text_expr,
+            file_expr=self.file_expr,
+            code_expr=self.code_expr
+        )
+
     @property
     def list_lines(self):
-        return [r['file_name'] for r in self.loader.records.values()]
+        return [r['file_name'] for r in self.list_recs.values()]
 
     @property
     def descriptions(self):
         return [r['description'] for r in self.loader.records.values()]
+
+    def search_text_change(self, buffer):
+
+
+
+        ===================================================================
+        this is bad syntax
+
+        rex_glob = re.compile(r'\\g([^\\]+)')
+        rex_code = re.compile(r'\\c([^\\]+)')
+        rex_file = re.compile(r'\\f([^\\]+)')
+        rex_text = re.compile(r'\\t([^\\]+)')
+        rex_slash = re.compile(r'\\')
+
+        def get_matches(s):
+            mg = rex_glob.search(s)
+            if mg:
+                print(f'glob = {mg.group(1)}')
+
+            mc = rex_code.search(s)
+            if mc:
+                print(f'code = {mc.group(1)}')
+
+            mf = rex_file.search(s)
+            if mf:
+                print(f'file = {mf.group(1)}')
+
+            mt = rex_text.search(s)
+            if mt:
+                print(f'text = {mt.group(1)}')
+
+            ms = rex_slash.search(s)
+            print(f'has slash {bool(ms)}')
+
+        # m = rex_glob.search(s)
+        # print(bool(m))
+        # if m and m.group(1):
+        #     print(m.group(1))
+        s = 'rob\g*.py\fbanana\torange\crob'
+        s = 'hello\f*.py'
+        print(repr(s))
+        get_matches(repr(s))
+
+
+        end bad syntax
+        ===================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        app_state = buffer.app_state
+        app_state.text_expr = buffer.text
+        app_state.sync_list_lines()
+        self.set_code(0)
+        return
+        app_state = buffer.app_state
+        doc = buffer.document
+        pos = doc.cursor_position_row
+
+        content_buffer = app_state.content_buffer
+        content_buffer.read_only = to_filter(False)
+        content_buffer.text = app_state.code(pos)
+        content_buffer.read_only = to_filter(True)
 
     def list_row_change(self, buffer):
         app_state = buffer.app_state
@@ -67,7 +207,13 @@ class AppState:
 
     def code(self, index):
         self._index = index
-        return list(self.loader.records.values())[self._index]['code']
+        return list(self.list_recs.values())[self._index]['code']
+
+    def set_code(self, index):
+        content_buffer = self.content_buffer
+        content_buffer.read_only = to_filter(False)
+        content_buffer.text = self.code(index)
+        content_buffer.read_only = to_filter(True)
 
     @property
     def selected_code(self):
@@ -126,9 +272,7 @@ class UI:
             left_margins=[NumberedMargin()],
             content=BufferControl(buffer=self.state.list_buffer, focusable=True),
             cursorline=True,
-            # style='bg:#B0A0CB fg:black',
             style='bg:#AE9EC9 fg:black',
-            # style='bg:#154360 fg:white',
         )
 
         code_window = Window(
@@ -138,7 +282,13 @@ class UI:
         )
 
         search_window = Window(
-            content=BufferControl(buffer=self.state.search_buffer, focusable=True),
+            content=BufferControl(
+                buffer=self.state.search_buffer,
+                focusable=True,
+                key_bindings=self.get_search_key_bindings(),
+                # lexer=RainbowLexer()
+
+            ),
             height=1,
             style='bg:#1B2631  fg:#F1C40F',
         )
@@ -154,6 +304,21 @@ class UI:
             search_window
         ])
         return root_container
+
+
+    def get_search_key_bindings(self):
+        kb = KeyBindings()
+
+        @kb.add('enter', eager=True)
+        def _(event):
+            window_to_focus = event.app.state.focus_window(0)
+            event.app.layout.focus(window_to_focus)
+            # event.app.state.search_buffer.text = AppState.SEARCH_DEFAULT_TEXT
+            # event.app.state.search_buffer.read_only = to_filter(True)
+            # event.app.state.clear_searches()
+            event.app.state.sync_list_lines()
+
+        return kb
 
 
 
@@ -172,7 +337,7 @@ class UI:
             event.app.state.print_on_exit = True
             event.app.exit()
 
-        @kb.add('space')
+        @kb.add('space', filter=not_in_search_mode)
         def _(event):
             " Quit application. "
             window_to_focus = event.app.state.next_window()
@@ -183,34 +348,28 @@ class UI:
             " Quit application. "
             window_to_focus = event.app.state.search_window
             event.app.layout.focus(window_to_focus)
+            event.app.state.search_buffer.read_only = to_filter(False)
+            event.app.state.search_buffer.text = ''
 
         @kb.add('escape')
         def _(event):
             " Quit application. "
             window_to_focus = event.app.state.focus_window(0)
             event.app.layout.focus(window_to_focus)
+            event.app.state.search_buffer.text = AppState.SEARCH_DEFAULT_TEXT
+            event.app.state.search_buffer.read_only = to_filter(True)
+            event.app.state.clear_searches()
+            event.app.state.sync_list_lines()
 
         return kb
 
     def run(self):
-        # loader = Loader()
-        # if not loader.has_tables:
-        #     msg = 'You must run sync command'
-        #     print(msg, file=sys.stderr)
-        #     sys.exit(1)
-        #
-        # state = AppState(loader)
-        # ui = UI(state)
-        #
-        # root_container = ui.get_container(state)
-        # kb = ui.get_key_bindings()
         root_container = self.get_container()
         kb = self.get_key_bindings()
 
         layout = Layout(root_container)
         style = Style(
             [
-                # ('cursor-line', 'fg:ansiblack bg:ansicyan'),
                 ('cursor-line', 'fg:ansiwhite bg:#003366'),
                 ('cursor-line', 'fg:#CCCCCC bg:#003366'),
             ]
@@ -225,10 +384,12 @@ class UI:
             style=style,
         )
         self.state.app = app
+        self.state.layout = layout
         app.state = self.state
 
         app.run()
         self.state.print()
+
 
 @click.command(help='A CLI tool for searching your gists')
 @click.option('-t', '--token', help='Set up github token')
