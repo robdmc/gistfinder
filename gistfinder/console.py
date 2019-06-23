@@ -272,11 +272,8 @@ class AppState:
         if not self.print_on_exit:
             return
         print('\n', file=sys.stderr)
-        print(('>' * 20) + ' ' + self.selected_file_name + ' ' + ('<' * 20), file=sys.stderr)
         print(file=sys.stderr)
         print(self.selected_code, file=sys.stderr)
-        print('', file=sys.stderr)
-        print(('>' * 30) + ('<' * 30), file=sys.stderr)
         print('', file=sys.stderr)
 
     def register_windows(self, *windows):
