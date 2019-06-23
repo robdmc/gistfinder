@@ -18,6 +18,13 @@ def get_version():
 
 
 install_requires = [
+    'dataset',
+    'requests',
+    'pytz',
+    'fuzzywuzzy',
+    'prompt_toolkit',
+    'Pygments',
+    'click',
 ]
 
 tests_require = [
