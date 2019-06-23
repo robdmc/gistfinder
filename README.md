@@ -9,6 +9,11 @@ gistfinder can use to download your gists to your computer.
 
 Here are the steps:
 
+1. step a
+1. step b
+1. step c
+
+
 ![step 1](images/gh_instructions.png)
 
 
