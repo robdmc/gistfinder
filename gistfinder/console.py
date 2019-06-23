@@ -220,7 +220,6 @@ class AppState:
 
         # app_state.text_expr = buffer.text
 
-        print_temp('yyy', buffer.text, self.glob_expr, self.text_expr, self.desc_expr, self.file_expr, self.code_expr)
         app_state.sync_list_lines()
         self.set_code(0)
         return
