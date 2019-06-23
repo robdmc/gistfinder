@@ -15,9 +15,9 @@ Here are the steps:
 1. Generate a new token
 1. Name the token something descriptive. Perhaps "gistfinder"
 1. Limit the permissions to only have access to gist
-1. Copy the created token
+1. Copy the created token to your terminal into the command
    ```bash
-   gistfinder -t <your_personal_access_token>
+   gistfinder -t your_personal_access_token
    ```
 
 
