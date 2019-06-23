@@ -16,7 +16,6 @@ from prompt_toolkit.layout.controls import BufferControl
 from prompt_toolkit.lexers import Lexer
 
 
-
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.filters import to_filter, Condition
 from prompt_toolkit.styles import Style

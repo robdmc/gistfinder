@@ -43,7 +43,7 @@ class Loader(Config):
                 [
                     rec['file_name'],
                     rec['description'],
-                    rec['code']
+                    # rec['code']
                 ]
             )
             out_recs[rec['gid']] = rec

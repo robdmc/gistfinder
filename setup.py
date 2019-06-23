@@ -48,7 +48,7 @@ extras_require = {
 setup(
     name='gistfinder',
     version=get_version(),
-    description='',
+    description='A CLI tool for searching your gists',
     long_description=open('README.md').read(),
     url='https://github.com/robdmc/gistfinder',
     author='Rob deCarvalho',
