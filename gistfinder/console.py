@@ -1,5 +1,12 @@
 #!/usr/bin/env python
+
+import warnings
+warnings.filterwarnings("ignore")
+
+from fnmatch import fnmatch
+import re
 import sys
+
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.enums import EditingMode
@@ -22,6 +29,7 @@ import click
 from gistfinder.sync import Updater
 from .loader import Loader
 from .config import Config
+from .utils import print_temp
 
 
 from prompt_toolkit.styles.named_colors import NAMED_COLORS
@@ -104,7 +112,7 @@ class AppState:
         return self.loader.get(
             glob_expr=self.glob_expr,
             text_expr=self.text_expr,
-            desc_expr=self.text_expr,
+            desc_expr=self.desc_expr,
             file_expr=self.file_expr,
             code_expr=self.code_expr
         )
@@ -117,75 +125,106 @@ class AppState:
     def descriptions(self):
         return [r['description'] for r in self.loader.records.values()]
 
+    # def get_search_strings(self, query):
+    #     rex_glob = re.compile(r'\\g([^\\]+)')
+    #     rex_code = re.compile(r'\\c([^\\]+)')
+    #     rex_file = re.compile(r'\\f([^\\]+)')
+    #     rex_text = re.compile(r'\\t([^\\]+)')
+    #     rex_slash = re.compile(r'\\')
+    #
+    #     mg = rex_glob.search(s)
+    #     if mg:
+    #         print(f'glob = {mg.group(1)}')
+    #
+    #     mc = rex_code.search(s)
+    #     if mc:
+    #         print(f'code = {mc.group(1)}')
+    #
+    #     mf = rex_file.search(s)
+    #     if mf:
+    #         print(f'file = {mf.group(1)}')
+    #
+    #     mt = rex_text.search(s)
+    #     if mt:
+    #         print(f'text = {mt.group(1)}')
+    #
+    #     ms = rex_slash.search(s)
+    #     print(f'has slash {bool(ms)}')
+
+    # def search_text_change(self, buffer):
+    #     rex_glob = re.compile(r'\\g([^\\]+)')
+    #     rex_code = re.compile(r'\\c([^\\]+)')
+    #     rex_file = re.compile(r'\\f([^\\]+)')
+    #     rex_text = re.compile(r'\\t([^\\]+)')
+    #     rex_slash = re.compile(r'\\')
+    #
+    #     app_state = buffer.app_state
+    #
+    #     # query = buffer.text
+    #     # m_glob = rex
+    #     app_state.text_expr = buffer.text
+    #     app_state.sync_list_lines()
+    #     self.set_code(0)
+    #     return
+    #
+    #     app_state = buffer.app_state
+    #     doc = buffer.document
+    #     pos = doc.cursor_position_row
+    #
+    #     content_buffer = app_state.content_buffer
+    #     content_buffer.read_only = to_filter(False)
+    #     content_buffer.text = app_state.code(pos)
+    #     content_buffer.read_only = to_filter(True)
+
     def search_text_change(self, buffer):
-
-
-
-        ===================================================================
-        this is bad syntax
-
         rex_glob = re.compile(r'\\g([^\\]+)')
         rex_code = re.compile(r'\\c([^\\]+)')
         rex_file = re.compile(r'\\f([^\\]+)')
         rex_text = re.compile(r'\\t([^\\]+)')
-        rex_slash = re.compile(r'\\')
-
-        def get_matches(s):
-            mg = rex_glob.search(s)
-            if mg:
-                print(f'glob = {mg.group(1)}')
-
-            mc = rex_code.search(s)
-            if mc:
-                print(f'code = {mc.group(1)}')
-
-            mf = rex_file.search(s)
-            if mf:
-                print(f'file = {mf.group(1)}')
-
-            mt = rex_text.search(s)
-            if mt:
-                print(f'text = {mt.group(1)}')
-
-            ms = rex_slash.search(s)
-            print(f'has slash {bool(ms)}')
-
-        # m = rex_glob.search(s)
-        # print(bool(m))
-        # if m and m.group(1):
-        #     print(m.group(1))
-        s = 'rob\g*.py\fbanana\torange\crob'
-        s = 'hello\f*.py'
-        print(repr(s))
-        get_matches(repr(s))
-
-
-        end bad syntax
-        ===================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        rex_slash = re.compile(r'\\$')
 
         app_state = buffer.app_state
-        app_state.text_expr = buffer.text
+
+        query = buffer.text
+        m_glob = rex_glob.search(query)
+        m_code = rex_code.search(query)
+        m_file = rex_file.search(query)
+        m_text = rex_text.search(query)
+        m_slash = rex_slash.search(query)
+
+        self.clear_searches()
+
+        if m_slash:
+            return
+
+        if m_glob:
+            self.glob_expr = m_glob.group(1)
+        if m_code:
+            self.code_expr = m_code.group(1)
+        if m_file:
+            self.file_expr = m_file.group(1)
+        if m_text:
+            self.text_expr = m_text.group(1)
+
+        if not any([bool(m) for m in [m_glob, m_code, m_file, m_text]]):
+            self.text_expr = query
+
+        # if m_glob:
+        #     self.glob_expr = query.replace('\g', '')
+        # elif m_code:
+        #     self.code_expr = query.replace('\c', '')
+        # elif m_file:
+        #     self.file_expr = query.replace('\f', '')
+        # else:
+        #     self.text_expr = query
+
+        # app_state.text_expr = buffer.text
+
+        print_temp('yyy', buffer.text, self.glob_expr, self.text_expr, self.desc_expr, self.file_expr, self.code_expr)
         app_state.sync_list_lines()
         self.set_code(0)
         return
+
         app_state = buffer.app_state
         doc = buffer.document
         pos = doc.cursor_position_row
@@ -207,7 +246,10 @@ class AppState:
 
     def code(self, index):
         self._index = index
-        return list(self.list_recs.values())[self._index]['code']
+        if self.list_recs:
+            return list(self.list_recs.values())[self._index]['code']
+        else:
+            return ''
 
     def set_code(self, index):
         content_buffer = self.content_buffer
@@ -313,6 +355,7 @@ class UI:
         def _(event):
             window_to_focus = event.app.state.focus_window(0)
             event.app.layout.focus(window_to_focus)
+            # event.app.state.search_buffer.text = ''
             # event.app.state.search_buffer.text = AppState.SEARCH_DEFAULT_TEXT
             # event.app.state.search_buffer.read_only = to_filter(True)
             # event.app.state.clear_searches()

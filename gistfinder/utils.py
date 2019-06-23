@@ -11,3 +11,8 @@ class cached_property(object):
             return self
         res = instance.__dict__[self.func.__name__] = self.func(instance)
         return res
+
+
+def print_temp(*args, file_name='/tmp/gistfinder.log'):
+    with open(file_name, 'a') as buff:
+        print(*args, file=buff)

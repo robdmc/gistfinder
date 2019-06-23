@@ -198,6 +198,7 @@ class SingleGistGetter(GithubBase):
             resp = requests.get(url, params=params)
             data = json.loads(resp.text)
             blobs.append(GistBlob(data))
+        print('Done.')
         return blobs
 
 

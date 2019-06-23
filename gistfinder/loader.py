@@ -2,7 +2,7 @@ from collections import OrderedDict
 from fnmatch import fnmatch
 from fuzzywuzzy import process
 from .config import Config
-from .utils import cached_property
+from .utils import cached_property, print_temp
 
 
 class Loader(Config):
@@ -67,19 +67,19 @@ class Loader(Config):
 
     def get(self, *, glob_expr=None, text_expr=None, desc_expr=None, file_expr=None, code_expr=None):
         records = self.records
-        if glob_expr:
+        if glob_expr and records:
             records = self.filter_glob(glob_expr, records)
 
-        if text_expr:
+        if text_expr and records:
             records = self.rank(records, text_expr, 'text')
 
-        if desc_expr:
+        if desc_expr and records:
             records = self.rank(records, desc_expr, 'description')
 
-        if file_expr:
+        if file_expr and records:
             records = self.rank(records, file_expr, 'file_name')
 
-        if code_expr:
+        if code_expr and records:
             records = self.rank(records, code_expr, 'code')
 
         return records
