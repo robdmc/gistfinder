@@ -15,7 +15,10 @@ Here are the steps:
 1. Generate a new token
 1. Name the token something descriptive. Perhaps "gistfinder"
 1. Limit the permissions to only have access to gist
-1. Copy the created token to use for configuing gistfinder
+1. Copy the created token
+   ```bash
+   gistfinder -t <your_personal_access_token>
+   ```
 
 
 ![Diagram](images/gh_instructions.png)
