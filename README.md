@@ -8,34 +8,34 @@ gistfinder can use to download your gists to your computer.
 
 Here are the steps:
 
-1. Find the settings menu under your profile
+### Find the settings menu under your profile
 
 ![step 1](images/01_homepage.png)
 
-1. Go to "Developer settings"
+### Go to "Developer settings"
 
-![step 1](images/02_settings.png)
+![step 2](images/02_settings.png)
 
-1. Choose "Personal access tokens"
+### Choose "Personal access tokens"
 
-![step 1](images/03_personal_access_token.png)
+![step 3](images/03_personal_access_token.png)
 
-1. a
+### a
 
-![step 1](images/04_set_name.png)
+![step 4](images/04_set_name.png)
 
-1. b
+### b
 
-![step 1](images/05_set_permissions.png)
+![step 5](images/05_set_permissions.png)
 
-1. c
+### c
 
-![step 1](images/06_token.png)
+![step 6](images/06_token.png)
 
-1. d
+### d
 
-![step 1](images/06_generate_new_token.png)
+![step 7](images/06_generate_new_token.png)
 
-1. e
+### e
 
 ![step 1](images/07_token.png)
