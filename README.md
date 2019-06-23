@@ -9,42 +9,13 @@ gistfinder can use to download your gists to your computer.
 
 Here are the steps:
 
-1. step a
-1. step b
-1. step c
+1. Choose "Settings" from your profile at the upper right corner of you Github home page.
+1. Go to "Developer Settings"
+1. Choose "Personal access tokens"
+1. Generate a new token
+1. Name the token something descriptive. Perhaps "gistfinder"
+1. Limit the permissions to only have access to gist
+1. Copy the created token to use for configuing gistfinder
 
 
-![step 1](images/gh_instructions.png)
-
-
-### Find the settings menu under your profile
-
-![step 1](images/01_homepage.png)
-
-### Go to "Developer settings"
-
-![step 2](images/02_settings.png)
-
-### Choose "Personal access tokens"
-
-![step 3](images/03_personal_access_token.png)
-
-### a
-
-![step 4](images/04_generate_new_token.png)
-
-### b
-
-![step 5](images/05_set_name.png)
-
-### c
-
-![step 6](images/06_set_permissions.png)
-
-### d
-
-![step 7](images/07_token.png)
-
-### e
-
-![step 1](images/07_token.png)
+![Diagram](images/gh_instructions.png)
