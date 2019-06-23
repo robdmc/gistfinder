@@ -6,12 +6,11 @@ Gistfinder will need permission from Github to access your gists.
 The best way to set this up is to create a personal access token that
 gistfinder can use to download your gists to your computer.
 
-04_generate_new_token.png
-05_set_name.png
-06_set_permissions.png
-07_token.png
 
 Here are the steps:
+
+![step 1](images/gh_instructions.png)
+
 
 ### Find the settings menu under your profile
 
