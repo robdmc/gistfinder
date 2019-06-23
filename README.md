@@ -1,34 +1,41 @@
 # gistfinder
-Replace this text with your README content
+Here is what gistfinder does
 
-* Find the settings menu under your profile
+# Configuration
+Gistfinder will need permission from Github to access your gists.
+The best way to set this up is to create a personal access token that
+gistfinder can use to download your gists to your computer.
+
+Here are the steps:
+
+1. Find the settings menu under your profile
 
 ![step 1](images/01_homepage.png)
 
-* xxx
+1. Go to "Developer settings"
 
 ![step 1](images/02_settings.png)
 
-xxx
+1. Choose "Personal access tokens"
 
 ![step 1](images/03_personal_access_token.png)
 
-xxx
+1. a
 
 ![step 1](images/04_set_name.png)
 
-xxx
+1. b
 
 ![step 1](images/05_set_permissions.png)
 
-xxx
+1. c
 
 ![step 1](images/06_token.png)
 
-xxx
+1. d
 
 ![step 1](images/06_generate_new_token.png)
 
-xxx
+1. e
 
 ![step 1](images/07_token.png)
