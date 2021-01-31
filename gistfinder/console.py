@@ -25,7 +25,6 @@ import click
 
 from gistfinder.sync import Updater
 from .loader import Loader
-from .config import Config
 #  from .utils import print_temp
 
 from prompt_toolkit.application.current import get_app
@@ -336,19 +335,26 @@ class UI:
 
 
 @click.command(help='A CLI tool for searching your gists')
+@click.option('-u', '--user', help='Set up github user')
 @click.option('-t', '--token', help='Set up github token')
 @click.option('-s', '--sync', is_flag=True, help='Sync updated gists')
 @click.option('-r', '--reset', is_flag=True, help='Delete and resync all gists')
 @click.option('--fake', is_flag=True, help='Delete and resync all gists')
-def cli(token, sync, reset, fake):
-    if fake:
-        Updater().rob()
-        return
+def cli(user, token, sync, reset, fake):
+    updater = Updater()
     if reset:
-        Updater().reset()
+        updater.reset()
     elif sync:
-        Updater().sync()
-    elif token:
-        Config().set_github_token(token)
+        updater.sync()
+    elif token or user:
+        if token:
+            updater.set_github_token(token)
+        if user:
+            updater.set_github_user(user)
+
+        print()
+        print('Wrote config to: {}'.format(updater.auth_file))
+        print()
+
     else:
         UI().run()

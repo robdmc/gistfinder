@@ -2,7 +2,7 @@ from collections import OrderedDict
 from fnmatch import fnmatch
 from fuzzywuzzy import process
 from .config import Config
-from .utils import cached_property, print_temp
+from .utils import cached_property
 
 
 class Loader(Config):
@@ -83,12 +83,3 @@ class Loader(Config):
             records = self.rank(records, code_expr, 'code')
 
         return records
-
-
-
-
-
-
-
-
-

@@ -26,6 +26,7 @@ install_requires = [
     'python-Levenshtein',
     'pytz',
     'requests',
+    'tqdm',
 ]
 
 tests_require = [
