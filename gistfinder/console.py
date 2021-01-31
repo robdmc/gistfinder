@@ -3,7 +3,6 @@
 import warnings
 warnings.filterwarnings("ignore")
 
-from fnmatch import fnmatch
 import re
 import sys
 
@@ -13,7 +12,6 @@ from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import VSplit, Window, HSplit
 from prompt_toolkit.layout.controls import BufferControl
-from prompt_toolkit.lexers import Lexer
 
 
 from prompt_toolkit.layout.layout import Layout
@@ -21,19 +19,17 @@ from prompt_toolkit.filters import to_filter, Condition
 from prompt_toolkit.styles import Style
 from pygments.lexers import Python3Lexer
 
-from prompt_toolkit.layout import Margin, NumberedMargin, ScrollbarMargin
+from prompt_toolkit.layout import NumberedMargin
 from prompt_toolkit.lexers import PygmentsLexer
 import click
 
 from gistfinder.sync import Updater
 from .loader import Loader
 from .config import Config
-from .utils import print_temp
+#  from .utils import print_temp
 
-
-from prompt_toolkit.styles.named_colors import NAMED_COLORS
 from prompt_toolkit.application.current import get_app
-from prompt_toolkit.filters import Condition
+
 
 @Condition
 def not_in_search_mode():
@@ -41,21 +37,9 @@ def not_in_search_mode():
     return app.state.layout.current_window != app.state.search_window
 
 
-
-# class RainbowLexer(Lexer):
-#     def lex_document(self, document):
-#         colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
-#
-#         def get_line(lineno):
-#             ddd.ping()
-#             return [(colors[i % len(colors)], c) for i, c in enumerate(document.lines[lineno])]
-#
-#         return get_line
-
-
-
 class AppState:
     SEARCH_DEFAULT_TEXT = ' Search:/  Window:<space> Select:<enter> Exit:<ctrl-c>  Help:<ctrl-h>'
+
     def __init__(self, loader):
         self.glob_expr = None
         self.text_expr = None
@@ -77,24 +61,17 @@ class AppState:
         self.content_buffer.read_only = to_filter(True)
         self.content_buffer.app_state = self
 
-        help_text = self.SEARCH_DEFAULT_TEXT
-        self.search_buffer = Buffer(on_text_changed=self.search_text_change)  # Editable buffer.
+        self.search_buffer = Buffer(on_text_changed=self.search_text_change)
         self.search_buffer.app_state = self
-        # self.search_buffer.text = help_text
         self.search_buffer.read_only = to_filter(True)
         self.search_buffer.app_state = self
-
 
         self._index = 0
         self.print_on_exit = False
 
         self._list_lines = None
 
-
     def sync_list_lines(self):
-        # if self._list_lines is None:
-        #     self._list_lines = self.all_list_lines
-
         self.list_buffer.read_only = to_filter(False)
         self.list_buffer.text = '\n'.join(self.list_lines)
         self.list_buffer.read_only = to_filter(True)
@@ -123,57 +100,6 @@ class AppState:
     @property
     def descriptions(self):
         return [r['description'] for r in self.loader.records.values()]
-
-    # def get_search_strings(self, query):
-    #     rex_glob = re.compile(r'\\g([^\\]+)')
-    #     rex_code = re.compile(r'\\c([^\\]+)')
-    #     rex_file = re.compile(r'\\f([^\\]+)')
-    #     rex_text = re.compile(r'\\t([^\\]+)')
-    #     rex_slash = re.compile(r'\\')
-    #
-    #     mg = rex_glob.search(s)
-    #     if mg:
-    #         print(f'glob = {mg.group(1)}')
-    #
-    #     mc = rex_code.search(s)
-    #     if mc:
-    #         print(f'code = {mc.group(1)}')
-    #
-    #     mf = rex_file.search(s)
-    #     if mf:
-    #         print(f'file = {mf.group(1)}')
-    #
-    #     mt = rex_text.search(s)
-    #     if mt:
-    #         print(f'text = {mt.group(1)}')
-    #
-    #     ms = rex_slash.search(s)
-    #     print(f'has slash {bool(ms)}')
-
-    # def search_text_change(self, buffer):
-    #     rex_glob = re.compile(r'\\g([^\\]+)')
-    #     rex_code = re.compile(r'\\c([^\\]+)')
-    #     rex_file = re.compile(r'\\f([^\\]+)')
-    #     rex_text = re.compile(r'\\t([^\\]+)')
-    #     rex_slash = re.compile(r'\\')
-    #
-    #     app_state = buffer.app_state
-    #
-    #     # query = buffer.text
-    #     # m_glob = rex
-    #     app_state.text_expr = buffer.text
-    #     app_state.sync_list_lines()
-    #     self.set_code(0)
-    #     return
-    #
-    #     app_state = buffer.app_state
-    #     doc = buffer.document
-    #     pos = doc.cursor_position_row
-    #
-    #     content_buffer = app_state.content_buffer
-    #     content_buffer.read_only = to_filter(False)
-    #     content_buffer.text = app_state.code(pos)
-    #     content_buffer.read_only = to_filter(True)
 
     def search_text_change(self, buffer):
         rex_glob = re.compile(r'\\g([^\\]+)')
@@ -207,17 +133,6 @@ class AppState:
 
         if not any([bool(m) for m in [m_glob, m_code, m_file, m_text]]):
             self.text_expr = query
-
-        # if m_glob:
-        #     self.glob_expr = query.replace('\g', '')
-        # elif m_code:
-        #     self.code_expr = query.replace('\c', '')
-        # elif m_file:
-        #     self.file_expr = query.replace('\f', '')
-        # else:
-        #     self.text_expr = query
-
-        # app_state.text_expr = buffer.text
 
         app_state.sync_list_lines()
         self.set_code(0)
@@ -313,9 +228,9 @@ class UI:
         )
 
         code_window = Window(
-                left_margins=[NumberedMargin()],
-                content=BufferControl(buffer=self.state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
-                ignore_content_width=True
+            left_margins=[NumberedMargin()],
+            content=BufferControl(buffer=self.state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
+            ignore_content_width=True
         )
 
         search_window = Window(
@@ -335,13 +250,11 @@ class UI:
 
         main_container = VSplit([list_window, code_window])
 
-
         root_container = HSplit([
             main_container,
             search_window
         ])
         return root_container
-
 
     def get_search_key_bindings(self):
         kb = KeyBindings()
@@ -350,19 +263,12 @@ class UI:
         def _(event):
             window_to_focus = event.app.state.focus_window(0)
             event.app.layout.focus(window_to_focus)
-            # event.app.state.search_buffer.text = ''
-            # event.app.state.search_buffer.text = AppState.SEARCH_DEFAULT_TEXT
-            # event.app.state.search_buffer.read_only = to_filter(True)
-            # event.app.state.clear_searches()
             event.app.state.sync_list_lines()
 
         return kb
 
-
-
     def get_key_bindings(self):
         kb = KeyBindings()
-
 
         @kb.add('c-c')
         def _(event):
