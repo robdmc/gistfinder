@@ -2,7 +2,7 @@ import os
 import requests
 import math
 import time
-import tqdm
+from tqdm import tqdm
 import sys
 from .config import Config
 
@@ -11,9 +11,6 @@ class Updater(Config):
     PER_PAGE = 99
     MAX_GISTS = 10_000
 
-    def __init__(self):
-        self.access_token = os.environ['GIST_TOKEN']
-
     def blob_generator(self):
         for page in range(int(math.ceil(self.MAX_GISTS / self.PER_PAGE))):
             params = {
@@ -21,7 +18,7 @@ class Updater(Config):
                 'page': page,
             }
             headers = {
-                'Authorization': f'token {self.access_token}',
+                'Authorization': f'token {self.github_token}',
                 'accept': 'application/vnd.github.v3+json'
             }
             resp = requests.get(self.user_url, params=params, headers=headers)
@@ -39,10 +36,6 @@ class Updater(Config):
 
         return rec_list
 
-    # @ezr.pickle_cached_container()
-    # def ll(self):
-    #     return self.get_list()
-
     def get_parsed_blob_list(self):
         keys = [
             'url',
@@ -54,8 +47,7 @@ class Updater(Config):
         ]
         records = []
 
-        #for item in self.get_list(): TODO
-        for item in self.get_list()[:3]:
+        for item in self.get_list():
             record_template = {k: item[k] for k in keys}
             for file in item['files'].values():
                 record = record_template.copy()
@@ -72,14 +64,15 @@ class Updater(Config):
 
         return records
 
-    def update_list_table(self, recs, print=False):
+    def update_list_table(self):
+        recs = self.get_parsed_blob_list()
         table = self.list_table
         table.drop()
         table.insert_many(recs)
         table.create_index(['file_url'])
 
     def get_lookup_dict(self, table):
-        return {r['file_url']: r for r in self.list_table.all()}
+        return {r['file_url']: r for r in table.all()}
 
     def get_code(self, url):
         resp = requests.get(url)
@@ -90,6 +83,7 @@ class Updater(Config):
             return None
 
     def update_code_table(self, verbose=True):
+        #import pdb; pdb.set_trace()
         list_table = self.list_table
         code_table = self.code_table
 
@@ -124,6 +118,7 @@ class Updater(Config):
     def sync(self):
         self.update_list_table()
         self.update_code_table()
+        print('\nSync Complete!', file=sys.stderr)
         # self.u
         # with self.db as db:
         #     self.sync_lists(db)

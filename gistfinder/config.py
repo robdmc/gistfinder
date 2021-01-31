@@ -24,7 +24,9 @@ class Config:
 
         if not user:
             raise ValueError('You need to set up a github user')
-        return user
+
+        url = f'https://api.github.com/users/{user}/gists'
+        return url
 
     @cached_property
     def db(self):

@@ -8,7 +8,7 @@ from .utils import cached_property
 class Loader(Config):
     @cached_property
     def has_tables(self):
-        expected_tables = {'list', 'gist'}
+        expected_tables = {Config.LIST_TABLE, Config.CODE_TABLE}
         existing_tables = set(self.db.tables)
         return existing_tables.intersection(expected_tables) == expected_tables
 
@@ -18,18 +18,18 @@ class Loader(Config):
             return OrderedDict()
 
         cursor = self.db.query(
-            """
+            f"""
                 select
-                    l.gid,
+                    l.gist_id AS gid,
                     l.description,
-                    g.file_name,
-                    g.code
+                    l.file AS file_name,
+                    c.code
                 from
-                    list as l
+                    {Config.LIST_TABLE} as l
                 join
-                    gist as g
+                    {Config.CODE_TABLE} as c
                 on
-                    g.gid = l.gid
+                    c.file_url = l.file_url
                 order by
                     file_name collate nocase asc,
                     description asc

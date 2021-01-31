@@ -330,6 +330,10 @@ class UI:
         self.state.layout = layout
         app.state = self.state
 
+        import logging
+        logger = logging.getLogger()
+        logger.setLevel(logging.CRITICAL)
+
         app.run()
         self.state.print()
 
