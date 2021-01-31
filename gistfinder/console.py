@@ -37,7 +37,7 @@ def not_in_search_mode():
 
 
 class AppState:
-    SEARCH_DEFAULT_TEXT = ' Search:/  Window:<space> Select:<enter> Exit:<ctrl-c>  Help:<ctrl-h>'
+    SEARCH_DEFAULT_TEXT = r' Search:/ (file, description, code \g \f \c \t) Window:<space> Select:<enter> Exit:<ctrl-c> '
 
     def __init__(self, loader):
         self.glob_expr = None
@@ -63,7 +63,10 @@ class AppState:
         self.search_buffer = Buffer(on_text_changed=self.search_text_change)
         self.search_buffer.app_state = self
         self.search_buffer.read_only = to_filter(True)
-        self.search_buffer.app_state = self
+
+        self.description_buffer = Buffer()
+        self.description_buffer.app_state = self
+        self.description_buffer.read_only = to_filter(True)
 
         self._index = 0
         self.print_on_exit = False
@@ -101,60 +104,53 @@ class AppState:
         return [r['description'] for r in self.loader.records.values()]
 
     def search_text_change(self, buffer):
-        rex_glob = re.compile(r'\\g([^\\]+)')
-        rex_code = re.compile(r'\\c([^\\]+)')
-        rex_file = re.compile(r'\\f([^\\]+)')
-        rex_text = re.compile(r'\\t([^\\]+)')
-        rex_slash = re.compile(r'\\$')
+        # rex_glob = re.compile(r'\\g([^\\]+)')
+        # rex_code = re.compile(r'\\c([^\\]+)')
+        # rex_file = re.compile(r'\\f([^\\]+)')
+        # rex_text = re.compile(r'\\t([^\\]+)')
+        rex_text = re.compile(r'([^\\]+)')
+        rex_slash = re.compile(r'\\\s*$')
+        rex_space = re.compile(r'^\s*$')
 
         app_state = buffer.app_state
 
         query = buffer.text
-        m_glob = rex_glob.search(query)
-        m_code = rex_code.search(query)
-        m_file = rex_file.search(query)
+        # m_glob = rex_glob.search(query)
+        # m_code = rex_code.search(query)
+        # m_file = rex_file.search(query)
         m_text = rex_text.search(query)
         m_slash = rex_slash.search(query)
+        m_space = rex_space.search(query)
 
         self.clear_searches()
 
-        if m_slash:
+        if m_slash or m_space:
             return
 
-        if m_glob:
-            self.glob_expr = m_glob.group(1)
-        if m_code:
-            self.code_expr = m_code.group(1)
-        if m_file:
-            self.file_expr = m_file.group(1)
-        if m_text:
-            self.text_expr = m_text.group(1)
+        # if m_glob:
+        #     self.glob_expr = m_glob.group(1)
+        # if m_code:
+        #     self.code_expr = m_code.group(1)
+        # if m_file:
+        #     self.file_expr = m_file.group(1)
+        # if m_text:
+        #     self.text_expr = m_text.group(1)
 
-        if not any([bool(m) for m in [m_glob, m_code, m_file, m_text]]):
-            self.text_expr = query
+        # if not any([bool(m) for m in [m_glob, m_code, m_file, m_text]]):
+        # self.text_expr = query
+        self.text_expr = m_text.group(1)
 
         app_state.sync_list_lines()
         self.set_code(0)
+        self.set_description(0)
         return
 
-        app_state = buffer.app_state
-        doc = buffer.document
-        pos = doc.cursor_position_row
-
-        content_buffer = app_state.content_buffer
-        content_buffer.read_only = to_filter(False)
-        content_buffer.text = app_state.code(pos)
-        content_buffer.read_only = to_filter(True)
-
     def list_row_change(self, buffer):
-        app_state = buffer.app_state
         doc = buffer.document
         pos = doc.cursor_position_row
 
-        content_buffer = app_state.content_buffer
-        content_buffer.read_only = to_filter(False)
-        content_buffer.text = app_state.code(pos)
-        content_buffer.read_only = to_filter(True)
+        self.set_code(pos)
+        self.set_description(pos)
 
     def code(self, index):
         self._index = index
@@ -163,11 +159,24 @@ class AppState:
         else:
             return ''
 
+    def description(self, index):
+        self._index = index
+        if self.list_recs:
+            return list(self.list_recs.values())[self._index]['description']
+        else:
+            return ''
+
     def set_code(self, index):
         content_buffer = self.content_buffer
         content_buffer.read_only = to_filter(False)
         content_buffer.text = self.code(index)
         content_buffer.read_only = to_filter(True)
+
+    def set_description(self, index):
+        description_buffer = self.description_buffer
+        description_buffer.read_only = to_filter(False)
+        description_buffer.text = self.description(index)
+        description_buffer.read_only = to_filter(True)
 
     @property
     def selected_code(self):
@@ -231,14 +240,21 @@ class UI:
             content=BufferControl(buffer=self.state.content_buffer, focusable=True, lexer=PygmentsLexer(Python3Lexer)),
             ignore_content_width=True
         )
+        description_window = Window(
+            content=BufferControl(
+                buffer=self.state.description_buffer,
+                focusable=False,
+                # key_bindings=self.get_search_key_bindings(),
+            ),
+            height=1,
+            style='bg:#1B2631  fg:#F1C40F',
+        )
 
         search_window = Window(
             content=BufferControl(
                 buffer=self.state.search_buffer,
                 focusable=True,
                 key_bindings=self.get_search_key_bindings(),
-                # lexer=RainbowLexer()
-
             ),
             height=1,
             style='bg:#1B2631  fg:#F1C40F',
@@ -250,6 +266,7 @@ class UI:
         main_container = VSplit([list_window, code_window])
 
         root_container = HSplit([
+            description_window,
             main_container,
             search_window
         ])
@@ -270,6 +287,11 @@ class UI:
         kb = KeyBindings()
 
         @kb.add('c-c')
+        def _(event):
+            " Quit application. "
+            event.app.exit()
+
+        @kb.add('c-q')
         def _(event):
             " Quit application. "
             event.app.exit()
