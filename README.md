@@ -97,6 +97,7 @@ Here are the steps:
 The diagram below illustrates with screen-grabs the steps you need to take on the github site.
 
 ![Diagram](images/gh_instructions.png)
+
 And that's it!  You should now be ready to sync and search your gists
 
 # A peak under the hood
