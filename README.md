@@ -49,6 +49,7 @@ To blow away all local gists and resync
 gf --reset
 ```
 
+## Browse and search your gists
 To start gistfinder, simply type
 ```
 gistfinder
