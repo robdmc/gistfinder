@@ -3,7 +3,7 @@ Gistfinder provides local terminal-based access to all your github gists.
 You can fuzzy-search your gists and have them immediately available to you
 for cut and paste into the terminal.
 
-If you are familiar with the vim keybings (j-k for down-up and / for search) you should feel
+If you are familiar with the vim keybindings (j-k for down-up and / for search) you should feel
 right at home in gistfinder.
 
 ![Demo Gif](https://github.com/robdmc/gistfinder/blob/master/images/screencast.gif)
