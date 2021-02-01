@@ -8,6 +8,14 @@ right at home in gistfinder.
 
 ![Demo Gif](https://github.com/robdmc/gistfinder/blob/master/images/screencast.gif)
 
+[<font size="2">
+Just for my future reference, I made this recording by using the native OSX
+screen recording feature to make a `.mov` file.  I then used
+[Gif Brewary 3](https://apps.apple.com/us/app/gif-brewery-3-by-gfycat/id1081413713?mt=12)
+to convert it to a `.gif` file by manually setting the speed to 150%  and
+frames-per-sec to 6.  I let the software figure it out from there.
+</font>]
+
 ```
 bash> gistfinder --help
 Usage: gistfinder [OPTIONS]
