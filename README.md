@@ -6,6 +6,9 @@ for cut and paste into the terminal.
 If you are familiar with the vim keybings (j-k for down-up and / for search) you should feel
 right at home in gistfinder.
 
+![Demo Gif](https://github.com/robdmc/gistfinder/blob/master/images/screencast.gif)
+
+
 # Installation
 ```bash
 pip install gistfinder
@@ -40,7 +43,7 @@ gh
 ```
 This will open an interactive application in your terminal that looks like this
 
-![Diagram](images/gistfinder_example.png)
+![Example](images/gistfinder_example.png)
 The yellow text at the upper left is the description of the gist currently
 selected in the grey area.  You can navigate this selection using vim-like j-k keys.
 
