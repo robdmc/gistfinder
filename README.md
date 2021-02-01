@@ -1,26 +1,51 @@
-# gistfinder
-Here is what gistfinder does
+# Gistfinder
+Gistfinder provides local terminal-based access to all your github gists.
+You can fuzzy-search your gists and have them immediately available to you
+for cut and paste into the terminal.
 
-# Configuration
-Gistfinder will need permission from Github to access your gists.
-The best way to set this up is to create a personal access token that
-gistfinder can use to download your gists to your computer.
+If you are familiar with the vim keybings (j-k for down-up and / for search) you should feel
+right at home in gistfinder.
 
-To sync all of your gists
+# Installation
+```bash
+pip install gistfinder
+```
+
+# Usage
+You must first configure gisthub to allow it access to your github account.
+Doing so will store your github username and access token locally to
+` ~/.config/gistfinder/github_auth.json`.  (See below for details)
+
+## Sync your gists locally
+To sync all your gists locally, simply run
 ```bash
 gistfinder --sync
 ```
-or
+or use the shortcut alias
 ```bash
 gf --sync
 ```
-
 To blow away all local gists and resync
 ```bash
 gf --reset
 ```
 
+## Search your gists
+Simply type
+```
+gistfinder
+```
+or
+```
+gh
+```
 
+
+
+# Configuration
+Gistfinder will need permission from Github to access your gists.
+The best way to set this up is to create a personal access token that
+gistfinder can use to download your gists to your computer.
 
 Here are the steps:
 
@@ -38,3 +63,19 @@ Here are the steps:
 
 
 ![Diagram](images/gh_instructions.png)
+
+
+To sync all of your gists
+```bash
+gistfinder --sync
+```
+or
+```bash
+gf --sync
+```
+
+To blow away all local gists and resync
+```bash
+gf --reset
+```
+
