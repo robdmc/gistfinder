@@ -389,8 +389,7 @@ class UI:
 @click.option('-t', '--token', help='Set up github token')
 @click.option('-s', '--sync', is_flag=True, help='Sync updated gists')
 @click.option('-r', '--reset', is_flag=True, help='Delete and resync all gists')
-@click.option('--fake', is_flag=True, help='Delete and resync all gists')
-def cli(user, token, sync, reset, fake):
+def cli(user, token, sync, reset):
     updater = Updater()
     if reset:
         updater.reset()
