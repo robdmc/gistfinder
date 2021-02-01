@@ -74,6 +74,7 @@ setup(
     entry_points={
         'console_scripts': [
             'gistfinder = gistfinder.console:cli',
+            'gf = gistfinder.console:cli',
         ],
     }
 )

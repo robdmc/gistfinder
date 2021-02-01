@@ -37,7 +37,7 @@ def not_in_search_mode():
 
 
 class AppState:
-    SEARCH_DEFAULT_TEXT = r' Search:/ (file, description, code \g \f \c \t) Window:<space> Select:<enter> Exit:<ctrl-c> '
+    SEARCH_DEFAULT_TEXT = r' Search:/  Window:<space> Select:<enter> Exit:<ctrl-c> '
 
     def __init__(self, loader):
         self.glob_expr = None
@@ -67,6 +67,10 @@ class AppState:
         self.description_buffer = Buffer()
         self.description_buffer.app_state = self
         self.description_buffer.read_only = to_filter(True)
+
+        self.slash_buffer = Buffer()
+        self.slash_buffer.app_state = self
+        self.slash_buffer.read_only = to_filter(True)
 
         self._index = 0
         self.print_on_exit = False
@@ -175,7 +179,7 @@ class AppState:
     def set_description(self, index):
         description_buffer = self.description_buffer
         description_buffer.read_only = to_filter(False)
-        description_buffer.text = self.description(index)
+        description_buffer.text = f'   {self.description(index)}'
         description_buffer.read_only = to_filter(True)
 
     @property
@@ -260,15 +264,26 @@ class UI:
             style='bg:#1B2631  fg:#F1C40F',
         )
 
+        slash_window = Window(
+            content=BufferControl(
+                buffer=self.state.slash_buffer,
+                focusable=False,
+            ),
+            height=1,
+            width=1,
+            style='bg:#1B2631  fg:#F1C40F',
+        )
+
         self.state.register_windows(list_window, code_window)
         self.state.search_window = search_window
 
         main_container = VSplit([list_window, code_window])
+        search_container = VSplit([slash_window, search_window])
 
         root_container = HSplit([
             description_window,
             main_container,
-            search_window
+            search_container,
         ])
         return root_container
 
@@ -310,19 +325,28 @@ class UI:
 
         @kb.add('/')
         def _(event):
-            " Quit application. "
+            " Go into search mode "
             window_to_focus = event.app.state.search_window
             event.app.layout.focus(window_to_focus)
             event.app.state.search_buffer.read_only = to_filter(False)
             event.app.state.search_buffer.text = ''
 
+            event.app.state.slash_buffer.read_only = to_filter(False)
+            event.app.state.slash_buffer.text = '/'
+            event.app.state.slash_buffer.read_only = to_filter(True)
+
         @kb.add('escape')
         def _(event):
-            " Quit application. "
+            " Get out of search mode "
             window_to_focus = event.app.state.focus_window(0)
             event.app.layout.focus(window_to_focus)
             event.app.state.search_buffer.text = AppState.SEARCH_DEFAULT_TEXT
             event.app.state.search_buffer.read_only = to_filter(True)
+
+            event.app.state.slash_buffer.read_only = to_filter(False)
+            event.app.state.slash_buffer.text = ''
+            event.app.state.slash_buffer.read_only = to_filter(True)
+
             event.app.state.clear_searches()
             event.app.state.sync_list_lines()
 
