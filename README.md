@@ -8,6 +8,19 @@ right at home in gistfinder.
 
 ![Demo Gif](https://github.com/robdmc/gistfinder/blob/master/images/screencast.gif)
 
+```
+bash> gistfinder --help
+Usage: gistfinder [OPTIONS]
+
+  A CLI tool for searching your gists
+
+Options:
+  -u, --user TEXT   Set up github user
+  -t, --token TEXT  Set up github token
+  -s, --sync        Sync updated gists
+  -r, --reset       Delete and resync all gists
+  --help            Show this message and exit.
+```
 
 # Installation
 ```bash
