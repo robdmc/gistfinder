@@ -79,6 +79,9 @@ in the current list ordering.  When you have selected the filename of the gist y
 interested in, simply pressing `enter` will exit gistfinder with the contents of that gist
 written to stdout.
 
+**Note:** Currently gistfinder is hard-coded to ignore anything with a `.ipynb` extension.
+Jupyter notebooks don't play well with gistfinder, so I made sure they are not accessible.
+
 
 # Configuration
 Gistfinder will need permission from Github to access your gists.
