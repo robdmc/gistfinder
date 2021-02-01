@@ -50,7 +50,6 @@ code using vim keybindings.
 To exit gistfinder at any time, you can use either `ctrl-c` or `ctrl-q`, whatever alignes better with your
 muscle memory.
 
-![Diagram](images/gh_instructions.png)
 Much like vim, pressing the / key will drop you into a fuzzy search across all
 your gists.  File names, descriptions and code contents are all indexed in the search.
 As you search the file name list on the left will reorder itself to show the most
