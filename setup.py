@@ -50,7 +50,7 @@ setup(
     name='gistfinder',
     version=get_version(),
     description='A CLI tool for searching your gists',
-    long_description=open('README.md').read(),
+    long_description='A CLI tool for searching your gists',
     url='https://github.com/robdmc/gistfinder',
     author='Rob deCarvalho',
     author_email='unlisted@unlisted.net',
