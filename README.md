@@ -12,7 +12,7 @@ pip install gistfinder
 ```
 
 # Usage
-You must first configure gisthub to allow it access to your github account.
+You must first configure github to allow it access to your github account.
 Doing so will store your github username and access token locally to
 ` ~/.config/gistfinder/github_auth.json`.  (See below for details)
 
