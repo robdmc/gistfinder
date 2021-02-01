@@ -52,7 +52,7 @@ gistfinder
 ```
 or
 ```
-gh
+gf
 ```
 This will open an interactive application in your terminal that looks like this
 
@@ -93,9 +93,24 @@ Here are the steps:
    ```bash
    gistfinder -u github_username -t your_personal_access_token
    ```
-   And that's it!  You should now be ready to sync and search your gists
 
-
+The diagram below illustrates with screen-grabs the steps you need to take on the github site.
 
 ![Diagram](images/gh_instructions.png)
+And that's it!  You should now be ready to sync and search your gists
+
+# A peak under the hood
+All files related to gistfinder are stored on your local machine in the directory
+`~/.config/gistfinder`.  Your github username and access token are in `ls ~/.config/gistfinder/github_auth.json` and your gists
+are locally synced to the sqlite file `ls ~/.config/gistfinder/database.sqlite`.
+
+Should you want to poke around in the database to see what it contains, I highly recommend the [visidata](https://www.visidata.org/docs/) by Saul Pwanson.  Visidata is probably the best tool I know of for quickly exploring databases, csv files, web-links and more.
+
+___
+Projects by [robdmc](https://www.linkedin.com/in/robdecarvalho).
+* [Pandashells](https://github.com/robdmc/pandashells) Pandas at the bash command line
+* [Consecution](https://github.com/robdmc/consecution) Pipeline abstraction for Python
+* [Behold](https://github.com/robdmc/behold) Helping debug large Python projects
+* [Crontabs](https://github.com/robdmc/crontabs) Simple scheduling library for Python scripts
+* [Switchenv](https://github.com/robdmc/switchenv) Manager for bash environments
 
