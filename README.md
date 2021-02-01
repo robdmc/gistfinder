@@ -109,7 +109,7 @@ All files related to gistfinder are stored on your local machine in the director
 `~/.config/gistfinder`.  Your github username and access token are in `ls ~/.config/gistfinder/github_auth.json` and your gists
 are locally synced to the sqlite file `ls ~/.config/gistfinder/database.sqlite`.
 
-Should you want to poke around in the database to see what it contains, I highly recommend the [visidata](https://www.visidata.org/docs/) tool by Saul Pwanson.  Visidata is probably the best tool I know of for quickly exploring tabular data contained in databases, csv-files, web-links, and more.
+Should you want to poke around in the database to see what it contains, **I highly recommend the [visidata](https://www.visidata.org/docs/) tool by Saul Pwanson.**  Visidata is probably the best tool I know of for quickly exploring tabular data contained in databases, csv-files, web-links, and more.
 
 # Additional Info
 
