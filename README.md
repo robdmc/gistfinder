@@ -42,7 +42,7 @@ This will open an interactive application in your terminal that looks like this
 
 ![Diagram](images/gistfinder_example.png)
 The yellow text at the upper left is the description of the gist currently
-selected in the greyish area.  You can navigate this selection using vim-like j-k keys.
+selected in the grey area.  You can navigate this selection using vim-like j-k keys.
 
 At any point you can press the space bar to move over to the code window and navigate your
 code using vim keybindings.
@@ -67,7 +67,7 @@ gistfinder can use to download your gists to your computer.
 
 Here are the steps:
 
-1. Choose "Settings" from your profile at the upper right corner of you Github home page.
+1. Choose "Settings" from your profile at the upper right corner of your Github home page.
 1. Go to "Developer Settings"
 1. Choose "Personal access tokens"
 1. Generate a new token
@@ -77,23 +77,9 @@ Here are the steps:
    ```bash
    gistfinder -u github_username -t your_personal_access_token
    ```
+   And that's it!  You should now be ready to sync and search your gists
 
 
 
 ![Diagram](images/gh_instructions.png)
-
-
-To sync all of your gists
-```bash
-gistfinder --sync
-```
-or
-```bash
-gf --sync
-```
-
-To blow away all local gists and resync
-```bash
-gf --reset
-```
 
