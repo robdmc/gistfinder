@@ -30,8 +30,7 @@ To blow away all local gists and resync
 gf --reset
 ```
 
-## Search your gists
-Simply type
+To start gistfinder, simply type
 ```
 gistfinder
 ```
@@ -39,7 +38,27 @@ or
 ```
 gh
 ```
+This will open an interactive application in your terminal that looks like this
 
+![Diagram](images/gistfinder_example.png)
+The yellow text at the upper left is the description of the gist currently
+selected in the greyish area.  You can navigate this selection using vim-like j-k keys.
+
+At any point you can press the space bar to move over to the code window and navigate your
+code using vim keybindings.
+
+To exit gistfinder at any time, you can use either `ctrl-c` or `ctrl-q`, whatever alignes better with your
+muscle memory.
+
+![Diagram](images/gh_instructions.png)
+Much like vim, pressing the / key will drop you into a fuzzy search across all
+your gists.  File names, descriptions and code contents are all indexed in the search.
+As you search the file name list on the left will reorder itself to show the most
+relevant file names at the top.  Pressing enter will get you out of search mode
+and back into list navigation mode, but will continue to show search term that resulted
+in the current list ordering.  When you have selected the filename of the gist you are
+interested in, simply pressing `enter` will exit gistfinder with the contents of that gist
+written to stdout.
 
 
 # Configuration
