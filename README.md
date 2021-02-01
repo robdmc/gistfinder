@@ -4,15 +4,10 @@ You can fuzzy-search your gists and have them immediately available to you
 for cut and paste into the terminal.
 
 If you are familiar with the vim keybindings (j-k for down-up and / for search) you should feel
-right at home in gistfinder.
+right at home in gistfinder.  Here is a gif demo<sup>*</sup>
 
 ![Demo Gif](https://github.com/robdmc/gistfinder/blob/master/images/screencast.gif)
 
-Just for my future reference, I made this recording by using the native OSX
-screen recording feature to make a `.mov` file.  I then used
-[Gif Brewary 3](https://apps.apple.com/us/app/gif-brewery-3-by-gfycat/id1081413713?mt=12)
-to convert it to a `.gif` file by manually setting the speed to 150%  and
-frames-per-sec to 6.  I let the software figure it out from there.
 
 ```
 bash> gistfinder --help
@@ -113,6 +108,14 @@ are locally synced to the sqlite file `ls ~/.config/gistfinder/database.sqlite`.
 
 Should you want to poke around in the database to see what it contains, I highly recommend the [visidata](https://www.visidata.org/docs/) tool by Saul Pwanson.  Visidata is probably the best tool I know of for quickly exploring tabular data contained in databases, csv-files, web-links, and more.
 
+# Additional Info
+
+<sup>*</sup>Just for my future reference, I made this recording by using the native OSX
+screen recording feature to make a `.mov` file.  I then used
+[Gif Brewary 3](https://apps.apple.com/us/app/gif-brewery-3-by-gfycat/id1081413713?mt=12)
+to convert it to a `.gif` file by manually setting the speed to 150%  and
+frames-per-sec to 6.  I let the software figure it out from there.
+
 ___
 Projects by [robdmc](https://www.linkedin.com/in/robdecarvalho).
 * [Pandashells](https://github.com/robdmc/pandashells) Pandas at the bash command line
@@ -120,4 +123,5 @@ Projects by [robdmc](https://www.linkedin.com/in/robdecarvalho).
 * [Behold](https://github.com/robdmc/behold) Helping debug large Python projects
 * [Crontabs](https://github.com/robdmc/crontabs) Simple scheduling library for Python scripts
 * [Switchenv](https://github.com/robdmc/switchenv) Manager for bash environments
+
 
